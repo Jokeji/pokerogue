@@ -52,6 +52,12 @@ import type { NonEmptyTuple } from "type-fest";
 import { expect, vi } from "vitest";
 
 /**
+ * The seeded battle RNG the scene ships with, kept so that a test can put the real rolls back.
+ * @see {@linkcode GameManager.useRealBattleRng}
+ */
+const realRandBattleSeedInt = BattleScene.prototype.randBattleSeedInt;
+
+/**
  * Class to manage the game state and transitions between phases.
  */
 export class GameManager {
@@ -79,8 +85,8 @@ export class GameManager {
    */
   constructor(phaserGame: Phaser.Game, bypassLogin = true) {
     localStorage.clear();
-    // Simulate max rolls on RNG functions
-    // TODO: Create helpers for disabling/enabling battle RNG
+    // Simulate max rolls on RNG functions.
+    // A test that needs the real, seeded rolls calls `useRealBattleRng()` before it starts a battle.
     BattleScene.prototype.randBattleSeedInt = (range, min = 0) => min + range - 1;
     this.gameWrapper = new GameWrapper(phaserGame, bypassLogin);
 
@@ -113,6 +119,21 @@ export class GameManager {
     this.initDefaultOverrides();
 
     global.fetch = vi.fn(MockFetch);
+  }
+
+  /**
+   * Puts the scene's real, seeded battle RNG back for the rest of this test.
+   *
+   * Every `GameManager` replaces the battle rolls with the highest possible value so that tests
+   * repeat, as described in the constructor. Call this before starting a battle when a test needs
+   * the actual rolls, such as checking that two runs from the same seed and the same inputs end in
+   * the same state.
+   *
+   * The next `GameManager` installs the simulated rolls again, so a test that forgets to undo this
+   * cannot leak the real RNG into the tests after it.
+   */
+  public useRealBattleRng(): void {
+    BattleScene.prototype.randBattleSeedInt = realRandBattleSeedInt;
   }
 
   /**

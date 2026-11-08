@@ -2,6 +2,7 @@ import { Battle } from "#app/battle";
 import type { BattleScene } from "#app/battle-scene";
 import { getGameMode } from "#app/game-mode";
 import { speciesDataRegistry } from "#app/global-species-data-registry";
+import { activeOverrides } from "#app/overrides";
 import { getDailyRunStarters } from "#data/daily-seed/daily-run";
 import { Gender } from "#data/gender";
 import { BattleType } from "#enums/battle-type";
@@ -33,7 +34,7 @@ export function holdOn(ms: number) {
 }
 
 export function generateStarters(scene: BattleScene, speciesIds?: SpeciesId[]): Starter[] {
-  scene.seed = "test";
+  scene.seed = activeOverrides.SEED_OVERRIDE || "test";
   const starters = getTestRunStarters(speciesIds);
   const startingLevel = scene.gameMode.getStartingLevel();
   for (const starter of starters) {

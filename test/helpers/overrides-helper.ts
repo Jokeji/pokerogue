@@ -454,6 +454,9 @@ export class OverridesHelper extends GameManagerHelper {
     // Shift the seed here with a negative wave number, to compensate for `resetSeed()` shifting the seed itself.
     this.game.scene.setSeed(shiftCharCodes(seed, (this.game.scene.currentBattle?.waveIndex ?? 0) * -1));
     this.game.scene.resetSeed();
+    // Also surface the seed as SEED_OVERRIDE so paths that seed from a session (or fall back to
+    // the test config's "test" seed) respect it instead of clobbering the value set above.
+    vi.spyOn(activeOverrides, "SEED_OVERRIDE", "get").mockReturnValue(seed);
     this.log(`Seed set to "${seed}"!`);
     return this;
   }
